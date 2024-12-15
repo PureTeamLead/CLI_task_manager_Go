@@ -3,6 +3,7 @@ package cmd
 import (
 	"cli/TaskManager/data"
 	"cli/TaskManager/filelib"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strconv"
@@ -16,6 +17,7 @@ func HandleActions(args []string) error{
 		return err
 	}
 
+	//check the command
 	switch args[1] {
 	case "add":
 		if len(args) < 3 {
@@ -83,29 +85,23 @@ func HandleActions(args []string) error{
 }
 
 func addTask(descr string) error{
-
+	//opening file
 	file, err := filelib.OpenJSON()
 	if err != nil {
 		return err
 	}
-	defer file.Close()
-
-	if err := UnboxJSON(); err != nil {
+	
+	//get the info from file into array
+	err = json.NewDecoder(file).Decode(&data.Tasks)	
+	if err != nil {
 		return err
-	}	
+	}
 
+	//creating new task
 	newTask := createNewTask(descr)
 	data.Tasks = append(data.Tasks, newTask)
 
-	tasksJson, err := MarshallJSON()
-	if err != nil {
-		return err
-	}
-
-	_, err = file.Write(tasksJson)
-	if err != nil {
-		return err
-	}
+	WriteArrayIntoJSON(file)
 
 	fmt.Printf("Task added successfully (ID: %d)\n", newTask.ID)
 	return nil
@@ -228,10 +224,14 @@ func deleteTask(id string) error{
 		}
 
 		if task.ID == ID {
+			fmt.Println("I get into cycle")
 			data.Tasks = append(data.Tasks[:idx], data.Tasks[idx + 1:]...)
 			fmt.Printf("Task (ID: %d) was deleted", ID)
 
-			WriteArrayIntoJSON(file)
+			err := WriteArrayIntoJSON(file)
+			if err != nil {
+				return err
+			}
 			return nil
 		}
 	}

@@ -26,6 +26,11 @@ func ParseStatus(status data.Status) string{
 
 func PrintOutTasks(status string) {
 
+	if len(data.Tasks) == 0 {
+		fmt.Println("Task array is empty")
+	}
+
+	//for printing all tasks or with status
 	for _, task := range data.Tasks {
 		if status != "" && ParseStatus(task.Status) != status {
 			continue
@@ -40,27 +45,6 @@ func PrintOutTasks(status string) {
 	}
 }
 
-func MarshallJSON() ([]byte, error){
-	fileJSON, err := json.MarshalIndent(data.Tasks, "", "  ")
-	if err != nil {
-		return nil, err
-	}
-
-	return fileJSON, nil
-}
-
-func UnMarshallJSON(jsonFile []byte) error{
-	if len(jsonFile) > 0 {
-		if err := json.Unmarshal(jsonFile, &data.Tasks); err != nil {
-			return err
-		}
-	}else {
-		fmt.Println("Tasks list is empty")
-	}
-
-	return nil
-}
-
 func CheckStatus(status string) error{
 	if status != ParseStatus(data.Todo) && status != ParseStatus(data.In_progress) && status != ParseStatus(data.Done) {
 		return fmt.Errorf("status %s not found", status)
@@ -69,27 +53,31 @@ func CheckStatus(status string) error{
 	return nil
 }
 
-func UnboxJSON() error{
-	jsonFile, err := filelib.ReadJSON()
+//combined with 2 funcs, 1) Parses the tasks slice into tasksJSON variable then writes it to json file
+func WriteArrayIntoJSON(file *os.File) error{
+	defer file.Close()
+	
+	file, err := os.Create(filelib.Filepath)
 	if err != nil {
 		return err
 	}
 
-	if err := UnMarshallJSON(jsonFile); err != nil {
+	err = json.NewEncoder(file).Encode(data.Tasks)
+	if err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func WriteArrayIntoJSON(file *os.File) error{
-	defer file.Close()
-	tasksJSON, err := MarshallJSON()
-		if err != nil {
-			return err
-		}
-		
-	_, err = file.Write(tasksJSON)
+//combined 2 funcs, that func read JSON file and packs the contents in tasks slice
+func UnboxJSON() error{
+	file, err := filelib.OpenJSON()
+	if err != nil {
+		return err
+	}
+	
+	err = json.NewDecoder(file).Decode(&data.Tasks)	
 	if err != nil {
 		return err
 	}

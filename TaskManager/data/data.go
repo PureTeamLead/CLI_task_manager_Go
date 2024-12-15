@@ -4,6 +4,7 @@ import "time"
 
 type Status int
 
+//enum for statuses
 const (
 	Todo Status = iota 
 	In_progress 

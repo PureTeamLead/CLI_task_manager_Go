@@ -1,24 +1,47 @@
 package filelib
 
 import (
+	"fmt"
 	"os"
+	"path"
 )
 
-var filepath string = "../data/tasks.json"
+func findPath() string{
 
-func OpenJSON() (*os.File, error){
-	file, err := os.OpenFile(filepath, os.O_RDWR, 0644)
+	cwd, err := os.Getwd()
 	if err != nil {
-		return nil, err
+		fmt.Println("Error getting current working directory")
+		return ""
 	}
-	return file, nil
+
+	return path.Join(cwd, "tasks.json")
 }
 
-func ReadJSON() ([]byte, error){
+var Filepath = findPath()
 
-	jsonFile, err := os.ReadFile(filepath)
+//opening file in r and w modes
+func OpenJSON() (*os.File, error){
+	_, err := os.Stat(Filepath)
+	if os.IsNotExist(err) {
+		fmt.Println("File does not exist. Creating the file...")
+		file, err := os.Create(Filepath)
+		if err != nil {
+			fmt.Println("Error creating file")
+			return nil, err
+		}
+
+		err = os.WriteFile(Filepath, []byte("[]"), os.ModeAppend.Perm())
+		if err != nil {
+			return file, err
+		}
+
+		return file, nil
+	}
+	
+	file, err := os.OpenFile(Filepath, os.O_RDWR, 0644)
 	if err != nil {
 		return nil, err
 	}
-	return jsonFile, nil
+
+	return file, nil
 }
