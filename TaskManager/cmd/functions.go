@@ -171,7 +171,6 @@ func mark(status data.Status, id string) error{
 			if err != nil {
 				return err
 			}
-			defer file.Close()
 
 			WriteArrayIntoJSON(file)
 
@@ -189,7 +188,6 @@ func updateTask(newDescr string, id string) error{
 	if err != nil {
 		return err
 	}
-	defer file.Close()
 
 	if err := UnboxJSON(); err != nil {
 		return err
@@ -222,7 +220,6 @@ func deleteTask(id string) error{
 	if err != nil {
 		return err
 	}
-	defer file.Close()
 
 	for idx, task := range data.Tasks {
 		ID, err := strconv.ParseInt(id, 10, 64)

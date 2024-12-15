@@ -75,16 +75,15 @@ func UnboxJSON() error{
 		return err
 	}
 
-	if len(jsonFile) > 0 {
-		if err := UnMarshallJSON(jsonFile); err != nil {
-			return err
-		}	
+	if err := UnMarshallJSON(jsonFile); err != nil {
+		return err
 	}
 
 	return nil
 }
 
 func WriteArrayIntoJSON(file *os.File) error{
+	defer file.Close()
 	tasksJSON, err := MarshallJSON()
 		if err != nil {
 			return err
