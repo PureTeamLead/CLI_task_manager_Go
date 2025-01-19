@@ -32,5 +32,3 @@ Main functions:
 #to mark a task
 ./app mark-in-progress {ID of task}
 ```
-
-The task of the project was taken from [Roadmap](https://roadmap.sh/projects/task-tracker)
